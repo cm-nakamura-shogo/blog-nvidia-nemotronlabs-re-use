@@ -11,7 +11,8 @@ SSH=(ssh -T -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMa
 
 case "$1" in
   run)
-    "${SSH[@]}" "${WORKSPACE}" "cd ${REMOTE_DIR} && source work/.venv-gpu/bin/activate && $2"
+    # セットアップ前は仮想環境がないので、あるときだけ有効にする
+    "${SSH[@]}" "${WORKSPACE}" "cd ${REMOTE_DIR} && { [ ! -f work/.venv-gpu/bin/activate ] || source work/.venv-gpu/bin/activate; } && $2"
     ;;
   fetch)
     shift

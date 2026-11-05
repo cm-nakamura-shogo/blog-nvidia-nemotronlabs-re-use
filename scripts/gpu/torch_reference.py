@@ -1,8 +1,10 @@
 """公式 PyTorch 実装（mamba_ssm）で推論し、照合用に float32 wav と速度を保存する。
 
-公式 inference.py / inference_chunk.py の処理をそのまま呼ぶ。違いは次の 2 点だけ。
+公式 inference.py / inference_chunk.py と同じ処理を行う。違いは次の 4 点。
 - 出力を 16bit FLAC ではなく float32 wav で保存する（量子化誤差を照合に混ぜないため）
 - 速度計測のために同じ入力を繰り返し処理する
+- 既定で TF32 を無効にする（--allow-tf32 で有効）
+- 重みを Hub の最新版ではなく、--repo-dir の model.safetensors から読む（revision を固定するため）
 
 公式リポジトリを --repo-dir に置いた状態で、その中のモジュールを import して使う。
 
