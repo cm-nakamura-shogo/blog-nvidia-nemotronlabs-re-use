@@ -1,0 +1,2 @@
+{"file": "mic_test2_x6_16000.wav", "sr": 16000, "channels": 1, "duration_s": 30.6, "infer_s_median": 27.2349, "rtf": 0.89, "peak_memory_gib": 2.166}
+{"load_s": 0.054}

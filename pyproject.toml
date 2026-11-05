@@ -1,0 +1,18 @@
+[project]
+name = "nemotronlabs-re-use-mlx"
+version = "0.1.0"
+description = "NVIDIA NemotronLabs RE-USE を MLX に変換して Apple Silicon で動かす検証"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "mlx-speech",
+    "numpy",
+    "soundfile",
+    "soxr>=1.1.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+mlx-speech = { git = "https://github.com/appautomaton/mlx-speech", rev = "503bd7efa9102a8e3937441448d82ae5371e679b" }

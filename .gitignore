@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.DS_Store
+.claude/settings.local.json
+
+# Model weights, third-party clones, audio outputs
+models/
+third_party/
+work/
+results/raw/

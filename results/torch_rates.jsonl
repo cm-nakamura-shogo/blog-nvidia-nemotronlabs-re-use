@@ -1,0 +1,7 @@
+{"file": "mic_test2_16000.wav", "sr": 16000, "duration_s": 5.1, "infer_s_median": 0.1526, "rtf": 0.0299, "peak_memory_gib": 0.919, "tf32": false, "gpu": "NVIDIA L40S"}
+{"file": "mic_test2_22050.wav", "sr": 22050, "duration_s": 5.1, "infer_s_median": 0.2304, "rtf": 0.0452, "peak_memory_gib": 1.249, "tf32": false, "gpu": "NVIDIA L40S"}
+{"file": "mic_test2_24000.wav", "sr": 24000, "duration_s": 5.1, "infer_s_median": 0.2269, "rtf": 0.0445, "peak_memory_gib": 1.35, "tf32": false, "gpu": "NVIDIA L40S"}
+{"file": "mic_test2_32000.wav", "sr": 32000, "duration_s": 5.1, "infer_s_median": 0.3086, "rtf": 0.0605, "peak_memory_gib": 1.783, "tf32": false, "gpu": "NVIDIA L40S"}
+{"file": "mic_test2_44100.wav", "sr": 44100, "duration_s": 5.1, "infer_s_median": 0.4705, "rtf": 0.0922, "peak_memory_gib": 2.446, "tf32": false, "gpu": "NVIDIA L40S"}
+{"file": "mic_test2_48000.wav", "sr": 48000, "duration_s": 5.1, "infer_s_median": 0.4617, "rtf": 0.0905, "peak_memory_gib": 2.649, "tf32": false, "gpu": "NVIDIA L40S"}
+{"file": "mic_test2_8000.wav", "sr": 8000, "duration_s": 5.1, "infer_s_median": 0.0819, "rtf": 0.0161, "peak_memory_gib": 0.486, "tf32": false, "gpu": "NVIDIA L40S"}
