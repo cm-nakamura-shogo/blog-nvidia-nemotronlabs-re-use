@@ -22,7 +22,7 @@ RE-USEには、先に研究用として公開された非商用版や、リア�
 
 - モデル群
   - RE-USEには、非商用の `nvidia/RE-USE`、商用利用できる `NVIDIA-NemotronLabs-RE-USE` とその笑い声保持版、非商用でストリーミング向けの `Real-time_RE-USE` がある
-  - 非商用版とNemotronLabs版は構造と設定が同じだが、重みは別物（ハッシュが異なる）
+  - `nvidia/RE-USE` とNemotronLabs版は構造と設定が同じだが、重みは別物（ハッシュが異なる）
 - 動作確認
   - L40Sで公式の推論スクリプトがそのまま動いた（公式の動作確認環境はA100）
   - 環境構築では、torchとmamba_ssmのバージョンの組み合わせと、Pythonのヘッダファイルに注意が必要
@@ -77,10 +77,10 @@ Hugging Faceには、RE-USEの名前を持つモデルが4つあります。
 
 | リポジトリ | 公開日 | パラメータ数 | ライセンス | 用途 |
 | --- | --- | ---: | --- | --- |
-| [nvidia/RE-USE](https://huggingface.co/nvidia/RE-USE) | 2026年3月18日 | 9.6M | NVIDIA One-Way Noncommercial（非商用） | 研究開発用 |
 | [nvidia/NVIDIA-NemotronLabs-RE-USE](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-RE-USE) | 2026年10月22日 | 9.6M | OpenMDW-1.1（商用利用可） | 本記事の対象 |
 | [nvidia/NVIDIA-NemotronLabs-RE-USE-laughter](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-RE-USE-laughter) | 2026年10月22日 | 9.6M | OpenMDW-1.1（商用利用可） | 笑い声を残したい場合 |
 | [nvidia/Real-time_RE-USE](https://huggingface.co/nvidia/Real-time_RE-USE) | 2026年4月14日 | 3.7M | NVIDIA One-Way Noncommercial（非商用） | ストリーミング処理 |
+| [nvidia/RE-USE](https://huggingface.co/nvidia/RE-USE) | 2026年3月18日 | 9.6M | NVIDIA One-Way Noncommercial（非商用） | 研究開発用 |
 
 `nvidia/RE-USE` のモデルカードには、商用利用する場合はNemotronLabs版を使うよう案内があります。
 笑い声保持版は、学習データに笑い声などの発声を集めたVocalSoundを加えたモデルで、構造はNemotronLabs版と同じです。
@@ -89,8 +89,12 @@ Hugging Faceには、RE-USEの名前を持つモデルが4つあります。
 使う層の数（3〜12）と先読みするフレーム数（0〜2）の組み合わせで、1つのモデルを30通りの遅延設定で動かせます。
 1フレームずつ入力して1フレームずつ出力する推論コードも付属しています。
 
-非商用版とNemotronLabs版は、`config.json` も推論コードも同じです（推論コードの差分はライセンス表記とリポジトリ名だけでした）。
-ただし、重みファイルのSHA-256は3つとも異なり、同じ構造で別に学習した重みであることがわかります。
+`nvidia/RE-USE` とNemotronLabs版のリポジトリを比べると、`config.json` は同一でした。
+モデルの定義（`models/` 以下）とユーティリティはライセンス表記のコメントだけが異なり、推論スクリプトの差分も、ライセンス表記、読み込むリポジトリ名、使われていない引数の削除だけでした。笑い声保持版も、`config.json` の値はNemotronLabs版と同じです（`cfg` というキーの下に入れ子になっている点だけが違います）。
+なお、`Real-time_RE-USE` は構造が別のモデルなので、この比較には含めていません。
+
+一方で、重みファイルのSHA-256は3つとも異なります。
+構造と設定は同じでも、重みはそれぞれ別のものです。
 
 | リポジトリ | `model.safetensors` のSHA-256（先頭8桁） |
 | --- | --- |
@@ -98,7 +102,22 @@ Hugging Faceには、RE-USEの名前を持つモデルが4つあります。
 | `nvidia/NVIDIA-NemotronLabs-RE-USE` | `06badaf4` |
 | `nvidia/NVIDIA-NemotronLabs-RE-USE-laughter` | `35c2a4e2` |
 
-コミュニティによるGGUF版（`audio-cpp/RE-USE-GGUF`）やMLX版（`appautomaton/re-use-semamba-mlx`）も公開されていますが、本記事の執筆時点では、どちらも非商用版の重みから変換されています。
+重みが違う理由は、モデルカードに記載された学習データから推測できます。
+`nvidia/RE-USE` にあってNemotronLabs版にないデータセットは、以下の4つです。
+
+| データセット | 用途 | ライセンス |
+| --- | --- | --- |
+| [EARS](https://github.com/facebookresearch/ears_dataset)（約100時間） | 音声 | CC-NC 4.0 |
+| [WHAM! Noise](http://wham.whisper.ai/)（約80時間） | 雑音 | CC BY-NC 4.0 |
+| [FSD50K](https://zenodo.org/records/4060432)（約100時間） | 音声以外の音 | 全体はCC BYだが、CC BY-NCのクリップを含む |
+| [Free Music Archive](https://github.com/mdeff/fma)（約200時間） | 音楽 | 楽曲ごとにアーティストが選んだライセンス（研究目的のデータセット） |
+
+どれも、商用利用に何らかの制限があるデータセットです。
+代わりにNemotronLabs版では、NVIDIAの社内データセット（Riva Speakers）が追加されています。
+NVIDIAは理由を明記していませんが、商用利用に制限のあるデータを除き、社内データで補って学習し直したものがNemotronLabs版だと考えられます。
+同じ4つのデータセットを含む `Real-time_RE-USE` が非商用のままであることとも合います。
+
+コミュニティによるGGUF版（`audio-cpp/RE-USE-GGUF`）やMLX版（`appautomaton/re-use-semamba-mlx`）も公開されていますが、本記事の執筆時点では、どちらも非商用の `nvidia/RE-USE` の重みから変換されています。
 商用で使う場合は、変換元のリポジトリを確認しておく必要があります。
 
 ### モデルカードのベンチマーク
@@ -121,15 +140,20 @@ Hugging Faceには、RE-USEの名前を持つモデルが4つあります。
 
 RE-USEは、音質の推定値ではSidonと同程度ですが、元音声との一致度と、内容や話者の保存では最も良い結果です。
 パラメータ数がSidonの約26分の1、UniPASEの約52分の1であることを考えると、小さなモデルで忠実さを保てている点が特徴だと言えそうです。
+
 モデルカードには16kHz、44.1kHz、48kHzのサブセットごとの結果もあり、44.1kHzと48kHzのサブセットでは比較対象（Resemble Enhance、ClearVoice）をすべての指標で上回っています。
 
 ## 実行環境
+
+それでは実行環境を整えていきます。
 
 ### Brevのインスタンス
 
 実行環境には、前回の日本語ASRの比較記事と同じく、NVIDIA BrevでL40Sを1基持つインスタンス（`l40s-48gb.1x`）を使いました。
 
-- [NVIDIA L40Sで日本語対応ASRモデルを比較してみた（NVIDIA社のParakeetがかなり良い結果に）](https://dev.classmethod.jp/articles/japanese-asr-l40s-fleurs-benchmark/)
+https://dev.classmethod.jp/articles/japanese-asr-l40s-fleurs-benchmark/
+
+以下が起動するコマンドです。
 
 ```bash
 brev create cm-nakamura-re-use --type l40s-48gb.1x
@@ -138,6 +162,8 @@ brev create cm-nakamura-re-use --type l40s-48gb.1x
 モデルカードで動作確認されているGPUはA100（Ampere世代）ですが、L40S（Ada Lovelace世代）でも問題なく動きました。
 
 ### ソフトウェアのバージョン
+
+各ソフトウェアのバージョンは以下の通りです。
 
 | 項目 | バージョン |
 | --- | --- |
@@ -152,32 +178,15 @@ brev create cm-nakamura-re-use --type l40s-48gb.1x
 モデルカードでは、Mambaの環境構築にSEMambaのリポジトリで配布されているDockerイメージが案内されています。
 今回は、mamba_ssmとcausal-conv1dの公式リリースにあるビルド済みのwheelを使い、uvの仮想環境に直接インストールしました。
 
-### 環境構築でつまずいた点
+### セットアップコマンド
 
-環境構築では、3か所でつまずきました。
-
-1つ目は、torchのバージョンが意図せず上がる問題です。
-PyTorch 2.6.0を先にインストールしてから、mamba_ssmやlibrosaを別のコマンドで追加したところ、依存関係の解決でtorchが2.14.1+cu130に上がりました。
-mamba_ssmのwheelはtorch 2.6向けにビルドされているため、読み込み時に `undefined symbol` で失敗します。
-CUDA 13.0はドライバ565（CUDA 12.7まで対応）では使えないので、どちらにしても動きません。
-torchを含むすべてのパッケージを、1回の `uv pip install` にまとめて解決させることで回避しました。
-
-2つ目は、mamba_ssmのバージョンです。
-最新のmamba_ssm 2.3.2.post1はtriton 3.5以上を要求し、torch 2.6が要求するtriton 3.2と両立しません。
-torch 2.6向けのwheelが配布されているmamba_ssm 2.2.4とcausal-conv1d 1.5.0.post8に下げました。
-
-3つ目は、Pythonのヘッダファイルです。
-mamba_ssmを読み込むと、tritonが実行時に小さなC拡張をビルドします。
-Brevのシステムに入っているPython 3.10には開発用ヘッダ（`Python.h`）がなく、このビルドが失敗しました。
-ヘッダを同梱しているuv管理のPythonで仮想環境を作り直すと動きました。
-
-最終的なセットアップは以下のとおりです。
+前述のソフトウェアのバージョンをセットアップするコマンドは以下です。
 
 ```bash
 uv venv --managed-python --python 3.10 work/.venv-gpu
 source work/.venv-gpu/bin/activate
 
-# 分けてインストールすると、後段で torch が新しい版に上がってしまう
+# 分割してpip install、後段で torch が新しい版に上がってしまうため一括インストール
 uv pip install \
   --extra-index-url https://download.pytorch.org/whl/cu124 \
   --index-strategy unsafe-best-match \
@@ -187,7 +196,15 @@ uv pip install \
   einops safetensors soundfile numpy pyyaml librosa resampy "huggingface_hub<1" "transformers<5"
 ```
 
-モデルはrevisionを固定してダウンロードしました。
+最新のmamba_ssm 2.3.2.post1はtriton 3.5以上を要求し、torch 2.6が要求するtriton 3.2と両立しません。
+そのためtorch 2.6向けのwheelが配布されているmamba_ssm 2.2.4とcausal-conv1d 1.5.0.post8に下げました。
+
+また、mamba_ssmを読み込むと、tritonが実行時に小さなC拡張をビルドします。
+Brevのシステムにデフォルトで入っているPython 3.10には開発用ヘッダ（`Python.h`）がなく、このビルドが失敗するため、ヘッダを同梱しているuv管理のPythonで仮想環境を作り直すことで動作することを確認しています。
+
+### モデルのダウンロード
+
+またRE-USEモデルはrevisionを固定してダウンロードしました。
 
 ```python
 from huggingface_hub import snapshot_download
@@ -208,10 +225,8 @@ snapshot_download(
 - `inference.sh`：`noisy_audio/` の音声を1ファイルずつまとめて処理し、`enhanced_audio/` にFLACで保存する
 - `inference_chunk.sh`：`long_noisy_audio/` の音声を5秒ずつ半分重ねて区切って処理し、結果をHann窓で重ね合わせる
 
-`inference_chunk.sh` は長い音声向けです。
-学習データの大半は10秒未満のクリップで、モデルカードでは30秒を超える音声やGPUメモリが足りない場合にこちらを使うよう案内されています。
-
-付属のサンプル音声で `inference.sh` を実行すると、そのまま動きました。
+`inference_chunk.sh` は長い音声向けで、モデルカードでは30秒を超える音声やGPUメモリが足りない場合にこちらを使うよう案内されています。
+サンプル音声は短いものが多いため、今回は `inference.sh` を実行しています。
 
 ```bash
 cd models/original
@@ -230,17 +245,24 @@ Initializing Inference Process...
 ![公式サンプルの処理前後のスペクトログラム](../results/figures/mic_test2_official.png)
 
 発話が始まる前（0〜1.7秒）の雑音と、発話の間の背景雑音がほぼ消えています。
-入力に見える9kHz付近の横線（定常的なハム音）もなくなりました。
+入力に見える9kHz付近の横線（定常的なハム音）もなくなっていることがわかります。
 
 もう1つ目に付くのは、高い周波数の成分です。
 入力は約15kHzより上が切れていますが、出力には22kHz付近まで成分があります。
 帯域拡張のオプション（`--BWE`）を指定していなくても、帯域が制限された入力に対しては、失われた高域を補って出力するようです。
 
+### 動作オプション
+
+<!-- TODO: 引数オプションをここで書く -->
+
 ## 速度とメモリ使用量の測定
 
 ### 測定方法
 
-速度を測るため、公式スクリプトと同じ処理を行うスクリプトを用意しました。
+速度を測るため、公式スクリプトと同じ処理を繰り返し行うスクリプト `TODO: スクリプト名` を用意しました。
+
+<!-- TODO: GitHub公開したらスクリプトのURL -->
+
 公式の `inference.py` との違いは、出力を16bitのFLACではなく32bit浮動小数点のWAVで保存する点と、同じ入力を繰り返し処理して時間を測る点だけです。
 公式スクリプトの出力とは、コサイン類似度0.9999999で一致することを確認しています（差はFLACの量子化誤差程度）。
 
@@ -285,29 +307,26 @@ TF32を有効にした場合も測りましたが、処理時間の短縮は5〜
 一括処理のGPUメモリは、5.1秒のときの0.92GiBから5.28GiBに増えており、音声の長さにほぼ比例しています。
 チャンク処理は区間を半分ずつ重ねるため、処理する音声の量が約2倍になり、処理時間も約1.7倍になりました。
 一方で、GPUメモリは音声の長さによらず5秒ぶんで済みます。
-数分を超える音声を扱う場合や、GPUメモリが小さい環境では、チャンク処理を使うことになりそうです。
+数分を超える音声を扱う場合や、GPUメモリが小さい環境では、チャンク処理を使うことでGPUメモリ消費量を抑えられそうです。
 
-## 使う上での注意点
-
-試してみてわかった点も含め、使う前に知っておきたい点をまとめます。
+## 使用上の注意点
 
 まず、NemotronLabs版はストリーミング処理に使えません。
 時間方向のMambaが双方向で、未来側からも音声を参照するため、音声全体がそろわないと出力を確定できない構造です。
 チャンク処理を使っても、5秒の区間がそろうまで待つことになります。
-ストリーミング向けには `Real-time_RE-USE` がありますが、こちらは非商用ライセンスです。
+ストリーミング向けには `Real-time_RE-USE` がありますが、こちらは非商用ライセンスとなっています。
 
 次に、重なった発話の扱いです。
 主話者を残してほかの話者を抑えるように学習されているため、複数人が話す会議の録音などでは、主話者以外の声が弱まる可能性があります。
 話者分離や議事録作成の前処理に使う場合は、事前に確認が必要です。
 
-最後に、日本語は学習データに含まれていません。
-言語に依存しない性能をうたっていますが、日本語での効果は自分で確かめる必要があります。
+最後に、日本語は学習データに含まれていません。言語に依存しない性能をうたっていますが、日本語での効果は自分で確かめる必要があります。
 
 ## まとめ
 
 NVIDIAの音声強調モデルNemotronLabs RE-USEについて、モデル群を整理し、公式実装をL40Sで動かしました。
 9.6Mパラメータと小さく、48kHzの音声でもRTF 0.09で処理でき、商用利用もできるため、録音の品質改善や音声処理の前段に組み込みやすいモデルです。
-モデル群の中では、非商用版とNemotronLabs版の重みが別物である点と、ストリーミング向けのモデルが非商用である点に注意が必要です。
+モデル群の中では、`nvidia/RE-USE` とNemotronLabs版の重みが別物である点と、ストリーミング向けのモデルが非商用である点に注意が必要です。
 
 今回は付属のサンプル音声でしか試していません。
 次回以降は、MLXに変換してMacで動かす方法と、日本語音声認識の前処理としての効果を確かめる予定です。
