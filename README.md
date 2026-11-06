@@ -97,18 +97,31 @@ uv run python scripts/mlx_enhance.py --input work/inputs/rates/*.wav --output-di
 ```bash
 brev create cm-nakamura-re-use --type l40s-48gb.1x
 
-# 手元で入力を作ってから送る
-uv run python scripts/make_inputs.py
+# 手元で入力を作ってから送る（Mac以外でも動くよう、プロジェクトの依存関係を使わない）
+uv run --no-project --with "huggingface_hub<2" python -c '
+from huggingface_hub import snapshot_download
+snapshot_download("nvidia/NVIDIA-NemotronLabs-RE-USE",
+                  revision="31f82f2efad1095034492f236e8dac9239ba713b",
+                  allow_patterns=["noisy_audio/*"], local_dir="models/original")'
+uv run --no-project --with numpy,soundfile,soxr==1.1.0 python scripts/make_inputs.py
 bash scripts/host/sync_to_brev.sh
 
 # Brev側で環境を作り、測定する
 bash scripts/host/remote.sh run "bash scripts/gpu/setup_brev.sh"
 bash scripts/host/remote.sh run "bash scripts/gpu/run_reference.sh"
 
-# 結果を取得して、MLX版と照合する
+# 結果を取得して、スペクトログラムを描く
 bash scripts/host/remote.sh fetch work/torch results
+uv run --no-project --with matplotlib,numpy,soundfile python scripts/plot_spectrogram.py \
+  models/original/noisy_audio/mic_test2.wav work/torch/rates/mic_test2_44100.wav \
+  --out results/figures/mic_test2_official.png
+
+# （Macのみ）MLX版の出力と照合する
 uv run python scripts/compare_waveforms.py work/torch/rates work/mlx/rates
 ```
+
+`pyproject.toml` はMac版（MLX）の依存関係を含むため、Apple SiliconのMac以外では `uv sync` や `uv run` が解決できません。
+L40S側の検証に必要な手元の作業は、上のように `--no-project` で必要なパッケージだけを指定して実行します。
 
 workspace名は環境変数 `REUSE_BREV_WORKSPACE` で変えられます。
 `remote.sh run` は、仮想環境（`work/.venv-gpu`）があればそれを有効にしてからコマンドを実行します。
