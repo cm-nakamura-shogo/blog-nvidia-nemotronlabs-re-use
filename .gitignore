@@ -11,3 +11,6 @@ results/raw/
 
 # Local-only: article drafts and memos
 articles/
+
+# devio-cli settings and cache
+.devio/
